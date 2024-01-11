@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Graph Visualization</title>
+</head>
+<style>
+    #url {
+        width: 80%;
+
+    }
+
+    form {
+        margin-bottom: 10px;
+    }
+
+    .result {
+
+        padding: 20px;
+        background-color: cadetblue;
+    }
+</style>
+
+<body>
+    <h1>Graph Visualization Useing NetworkX</h1>
+
+    <!-- Form for entering the URL -->
+    <form method="POST" action="/visualize">
+        <label for="url">Enter pivot node</label>
+        <input type="text" id="url" name="url" required>
+
+        <input type="submit" value="Get Graph">
+    </form>
+        <div style="margin-top: 5px;">
+            <label for="noderole">Enter role node</label>
+            <input type="text" id="noderole" name="noderole" required>
+            <label for="edgerole">Enter role edge</label>
+            <input type="text" id="edgerole" name="edgerole" required>
+            <button id="addroles">+</button>
+        </div>
+        <div>
+            <table border="3">
+                <thead>graph Roles</thead>
+                <th> node roles </th>
+                <th> edge roles </th>
+                <th> Actions </th>
+
+                <tbody id="roles">
+               
+
+                </tbody>
+            </table>
+        </div>
+      
+    <div class="result">
+        <h1>Graph Visualization Result</h1>
+        <!-- Display the graph image (if available) -->
+        {% if graph_image %}
+        <img src="data:image/png;base64,{{ graph_image }}" alt="Graph">
+        {% endif %}
+    </div>
+    <div> <!-- Display the table of nodes -->
+        <!-- Display the table of nodes -->
+        <h2>Nodes</h2>
+        <table>
+            <tr>
+                <th>Node ID</th>
+                <th>Attributes</th>
+            </tr>
+            {% if node_data %}
+            {% for node_id, node_attributes in node_data.items() %}
+            <tr>
+                <td>{{ node_id }}</td>
+                <td>
+                    <ul>
+                        {% for key, value in node_attributes.items() %}
+                        <li>{{ key }}: {{ value }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="2">No nodes to display.</td>
+            </tr>
+            {% endif %}
+        </table>
+
+        <!-- Display the table of edges -->
+        <h2>Edges</h2>
+        <table>
+            <tr>
+                <th>Edge ID</th>
+                <th>Attributes</th>
+            </tr>
+            {% if edge_data %}
+            {% for edge_id, edge_attributes in edge_data.items() %}
+            <tr>
+                <td>{{ edge_id }}</td>
+                <td>
+                    <ul>
+                        {% for key, value in edge_attributes.items() %}
+                        <li>{{ key }}: {{ value }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="2">No edges to display.</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    <script>
+let addbtn = document.getElementById("addroles");
+addbtn.addEventListener("click", addroles);
+
+let rolesarray = [];
+function addroles() {
+    let noderole = document.getElementById("noderole").value;
+    let edgerole = document.getElementById("edgerole").value;
+    let role = {
+        rolenode: noderole,
+        roleedge: edgerole
+    }
+
+    rolesarray.push(role);
+    console.log(rolesarray);
+    showroles();
+}
+
+function showroles() {
+ let postreq = document.getElementById("url");
+ postreq.value = "https://api.wossidia.de/graph/290000002/";
+    let roles = document.getElementById("roles");
+    roles.innerHTML = "";
+    for (let i = 0; i < rolesarray.length;i++) {
+        let tr = document.createElement("tr");
+        let nodetd = document.createElement("td");
+        nodetd.innerHTML = rolesarray[i].rolenode;
+        let edgetd = document.createElement("td");
+        edgetd.innerHTML = rolesarray[i].roleedge;
+        let delbtn = document.createElement("button");
+        delbtn.innerHTML = "-";
+        delbtn.onclick = () => {
+            rolesarray.splice(i, 1); // Remove 1 item at index i
+            showroles(); // Refresh the displayed roles
+        }
+     let btntd = document.createElement("td");
+         btntd.appendChild(delbtn);
+        tr.appendChild(nodetd);
+        tr.appendChild(edgetd);
+        tr.appendChild(btntd);
+        roles.appendChild(tr);
+        postreq.value += "<0:" + rolesarray[i].roleedge + ":1>" + rolesarray[i].rolenode;
+    }
+
+
+}
+
+    </script>
+</body>
+
+</html>
